@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#152b44">
+  <title>Weather — Find your forecast</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 28px 18px;
+      color: #f5f8fc;
+      background:
+        radial-gradient(ellipse at 18% 5%, #355d7d 0, transparent 38%),
+        linear-gradient(145deg, #102238, #1c344b 55%, #263e51);
+    }
+
+    .app {
+      width: min(100%, 460px);
+      padding: 30px;
+      border: 1px solid #ffffff24;
+      border-radius: 28px;
+      background: #ffffff0d;
+      box-shadow: 0 28px 80px #07152266;
+      backdrop-filter: blur(18px);
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: #b7c9d8;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.65rem;
+      letter-spacing: -.04em;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      padding: 14px 16px;
+      border: 1px solid #ffffff27;
+      border-radius: 14px;
+      outline: none;
+      color: #fff;
+      background: #071a2b55;
+      font: inherit;
+    }
+
+    input::placeholder {
+      color: #aebdca;
+    }
+
+    input:focus {
+      border-color: #a9d8f5;
+      box-shadow: 0 0 0 3px #a9d8f526;
+    }
+
+    form button {
+      padding: 0 18px;
+      border: 0;
+      border-radius: 14px;
+      color: #102238;
+      background: #c6e7f8;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background: #e0f3ff;
+    }
+
+    form button:disabled {
+      opacity: .65;
+      cursor: wait;
+    }
+
+    .status {
+      min-height: 22px;
+      margin: 10px 2px 0;
+      color: #c3d2de;
+      font-size: .85rem;
+    }
+
+    .weather {
+      padding: 24px 4px 20px;
+      text-align: center;
+    }
+
+    .place {
+      margin: 0;
+      color: #d7e4ed;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .icon {
+      height: 126px;
+      display: grid;
+      place-items: center;
+      font-size: 6.2rem;
+      line-height: 1;
+      filter: drop-shadow(0 10px 22px #07152255);
+    }
+
+    .temperature {
+      margin: 0;
+      font-size: 4.5rem;
+      font-weight: 300;
+      letter-spacing: -.08em;
+      line-height: 1;
+    }
+
+    .temperature small {
+      font-size: 1.65rem;
+      vertical-align: top;
+      letter-spacing: 0;
+    }
+
+    .unit-switch {
+      margin-left: 10px;
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 8px;
+      color: #d7e4ed;
+      background: transparent;
+      font: inherit;
+      font-size: 1.2rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    .unit-switch:hover {
+      color: #fff;
+      background: #ffffff18;
+    }
+
+    .unit-switch:focus-visible {
+      outline: 2px solid #c6e7f8;
+    }
+
+    .description {
+      margin: 10px 0 0;
+      color: #d7e4ed;
+      font-size: 1.05rem;
+      text-transform: capitalize;
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 16px;
+      border: 1px solid #ffffff1c;
+      border-radius: 16px;
+      background: #071a2b3d;
+    }
+
+    .metric-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #bdccd8;
+      font-size: .78rem;
+    }
+
+    .metric-value {
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    footer {
+      margin-top: 22px;
+      color: #9fb2c1;
+      font-size: .72rem;
+      text-align: center;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 420px) {
+      .app {
+        padding: 23px 20px;
+      }
+
+      form button {
+        padding: 0 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <p class="eyebrow">Your local forecast</p>
+      <h1>Weather, at a glance</h1>
+    </header>
+
+    <form id="search-form" role="search">
+      <input
+        id="location-input"
+        type="search"
+        placeholder="Search a city"
+        aria-label="City name"
+        autocomplete="off"
+        required
+      >
+      <button id="search-button" type="submit">Search</button>
+    </form>
+
+    <p id="status" class="status" role="status" aria-live="polite">
+      Search for a city to see its current conditions.
+    </p>
+
+    <section id="weather" class="weather" aria-label="Current weather" hidden>
+      <p id="place" class="place"></p>
+      <div id="icon" class="icon" aria-hidden="true">☁️</div>
+
+      <p class="temperature">
+        <span id="temperature">—</span><small id="main-unit">°C</small>
+        <button
+          id="unit-switch"
+          class="unit-switch"
+          type="button"
+          aria-label="Switch temperature unit"
+          title="Tap to switch temperature units"
+        >
+          (<span id="other-temperature">—</span>°F)
+        </button>
+      </p>
+
+      <p id="description" class="description"></p>
+    </section>
+
+    <section id="details" class="details" aria-label="Weather details" hidden>
+      <div class="metric">
+        <span class="metric-label">Humidity</span>
+        <span id="humidity" class="metric-value">—</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Wind speed</span>
+        <span id="wind" class="metric-value">—</span>
+      </div>
+    </section>
+
+    <footer>Weather data by Open-Meteo</footer>
+  </main>
+
+  <script>
+    const form = document.querySelector("#search-form");
+    const input = document.querySelector("#location-input");
+    const button = document.querySelector("#search-button");
+    const status = document.querySelector("#status");
+    const weather = document.querySelector("#weather");
+    const details = document.querySelector("#details");
+    const temperatureElement = document.querySelector("#temperature");
+    const mainUnitElement = document.querySelector("#main-unit");
+    const otherTemperatureElement =
+      document.querySelector("#other-temperature");
+    const unitSwitch = document.querySelector("#unit-switch");
+
+    let currentCelsius = null;
+    let isFahrenheit = false;
+
+    const weatherLabels = {
+      0: "Clear sky",
+      1: "Mainly clear",
+      2: "Partly cloudy",
+      3: "Overcast",
+      45: "Fog",
+      48: "Rime fog",
+      51: "Light drizzle",
+      53: "Drizzle",
+      55: "Heavy drizzle",
+      56: "Freezing drizzle",
+      57: "Heavy freezing drizzle",
+      61: "Light rain",
+      63: "Rain",
+      65: "Heavy rain",
+      66: "Freezing rain",
+      67: "Heavy freezing rain",
+      71: "Light snow",
+      73: "Snow",
+      75: "Heavy snow",
+      77: "Snow grains",
+      80: "Rain showers",
+      81: "Rain showers",
+      82: "Heavy rain showers",
+      85: "Snow showers",
+      86: "Heavy snow showers",
+      95: "Thunderstorm",
+      96: "Thunderstorm with hail",
+      99: "Thunderstorm with heavy hail"
+    };
+
+    function iconFor(code) {
+      if ([0, 1].includes(code)) return "☀️";
+      if ([2, 3, 45, 48].includes(code)) return "☁️";
+      if ([71, 73, 75, 77, 85, 86].includes(code)) return "🌨️";
+      if ([95, 96, 99].includes(code)) return "⛈️";
+      return "🌧️";
+    }
+
+    function renderTemperature() {
+      const fahrenheit = Math.round(currentCelsius * 9 / 5 + 32);
+      const celsius = Math.round(currentCelsius);
+
+      temperatureElement.textContent = isFahrenheit ? fahrenheit : celsius;
+      mainUnitElement.textContent = isFahrenheit ? "°F" : "°C";
+
+      if (isFahrenheit) {
+        unitSwitch.textContent = `(${celsius}°C)`;
+        unitSwitch.setAttribute("aria-label", "Switch to Celsius");
+      } else {
+        unitSwitch.textContent = `(${fahrenheit}°F)`;
+        unitSwitch.setAttribute("aria-label", "Switch to Fahrenheit");
+      }
+    }
+
+    unitSwitch.addEventListener("click", () => {
+      if (currentCelsius === null) return;
+
+      isFahrenheit = !isFahrenheit;
+      renderTemperature();
+    });
+
+    async function searchCity(name) {
+      button.disabled = true;
+      status.textContent = "Finding the forecast…";
+
+      try {
+        const geoResponse = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`
+        );
+
+        if (!geoResponse.ok) {
+          throw new Error("Could not look up that city. Try again.");
+        }
+
+        const geo = await geoResponse.json();
+        const city = geo.results?.[0];
+
+        if (!city) {
+          throw new Error("Location not found. Check the spelling and try again.");
+        }
+
+        const forecastResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=auto`
+        );
+
+        if (!forecastResponse.ok) {
+          throw new Error("Could not load weather right now. Please try again.");
+        }
+
+        const data = await forecastResponse.json();
+        const current = data.current;
+
+        document.querySelector("#place").textContent =
+          [city.name, city.admin1, city.country].filter(Boolean).join(", ");
+        document.querySelector("#icon").textContent =
+          iconFor(current.weather_code);
+
+        currentCelsius = current.temperature_2m;
+        isFahrenheit = false;
+        renderTemperature();
+
+        document.querySelector("#description").textContent =
+          weatherLabels[current.weather_code] || "Current conditions";
+        document.querySelector("#humidity").textContent =
+          `${current.relative_humidity_2m}%`;
+        document.querySelector("#wind").textContent =
+          `${Math.round(current.wind_speed_10m)} km/h`;
+
+        weather.hidden = false;
+        details.hidden = false;
+
+        status.textContent =
+          `Feels like ${Math.round(current.apparent_temperature)}°C · Updated ` +
+          new Date(current.time).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+          });
+      } catch (error) {
+        status.textContent =
+          error.message || "Something went wrong. Please try again.";
+        weather.hidden = true;
+        details.hidden = true;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const city = input.value.trim();
+
+      if (city) {
+        searchCity(city);
+      }
+    });
+  </script>
+</body>
+</html>
